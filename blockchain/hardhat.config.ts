@@ -1,6 +1,15 @@
-import "dotenv/config";
+import path from "path";
+import dotenv from "dotenv";
+
+// Load backend/.env or root .env
+dotenv.config({ path: path.resolve(__dirname, "../backend/.env") });
+dotenv.config({ path: path.resolve(__dirname, "../.env") });
+
 import hardhatToolboxViemPlugin from "@nomicfoundation/hardhat-toolbox-viem";
-import { configVariable, defineConfig } from "hardhat/config";
+import { defineConfig } from "hardhat/config";
+
+const sepoliaRpcUrl = process.env.SEPOLIA_RPC_URL || process.env.BLOCKCHAIN_RPC_URL || "https://rpc.sepolia.org";
+const sepoliaPrivateKey = process.env.SEPOLIA_PRIVATE_KEY || process.env.BLOCKCHAIN_PRIVATE_KEY;
 
 export default defineConfig({
   plugins: [hardhatToolboxViemPlugin],
@@ -37,8 +46,8 @@ export default defineConfig({
     sepolia: {
       type: "http",
       chainType: "l1",
-      url: process.env.SEPOLIA_RPC_URL || "https://rpc.sepolia.org",
-      accounts: process.env.SEPOLIA_PRIVATE_KEY ? [process.env.SEPOLIA_PRIVATE_KEY] : [],
+      url: sepoliaRpcUrl,
+      accounts: sepoliaPrivateKey ? [sepoliaPrivateKey] : [],
     },
   },
 });

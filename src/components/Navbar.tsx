@@ -31,16 +31,20 @@ export function Navbar() {
   const [open, setOpen] = useState(false)
   const [walletAddress, setWalletAddress] = useState<string | null>(null)
   const [isConnecting, setIsConnecting] = useState(false)
+  const [walletError, setWalletError] = useState<string | null>(null)
 
   async function handleConnectWallet() {
+    setWalletError(null)
     setIsConnecting(true)
     try {
       const address = await connectWallet()
       if (address) {
         setWalletAddress(address)
       }
-    } catch (err) {
-      console.warn('[Navbar] Failed to connect wallet:', err)
+    } catch (err: any) {
+      const msg: string = err?.message ?? 'Wallet connection failed.'
+      setWalletError(msg)
+      console.warn('[Navbar] Failed to connect wallet:', msg)
     } finally {
       setIsConnecting(false)
     }
@@ -83,10 +87,15 @@ export function Navbar() {
           >
             Sign In
           </NavLink>
-          <Button onClick={handleConnectWallet} disabled={isConnecting}>
-            <Wallet className="size-4" aria-hidden="true" />
-            {walletButtonLabel}
-          </Button>
+          <div className="flex flex-col items-end gap-1">
+            <Button onClick={handleConnectWallet} disabled={isConnecting}>
+              <Wallet className="size-4" aria-hidden="true" />
+              {walletButtonLabel}
+            </Button>
+            {walletError ? (
+              <p className="max-w-xs text-right text-xs text-red-600">{walletError}</p>
+            ) : null}
+          </div>
         </div>
 
         <button

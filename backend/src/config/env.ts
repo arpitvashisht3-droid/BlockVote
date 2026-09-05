@@ -26,7 +26,9 @@ export const config: AppConfig = {
   },
   blockchain: {
     rpcUrl: process.env.BLOCKCHAIN_RPC_URL || 'http://127.0.0.1:8545',
-    contractAddress: process.env.BLOCKCHAIN_CONTRACT_ADDRESS || '0x5FbDB2315678afecb367f032d93F642f64180aa3',
+    // Fallback is the active local Hardhat deployment.
+    // Set BLOCKCHAIN_CONTRACT_ADDRESS in backend/.env to override for Sepolia or other networks.
+    contractAddress: process.env.BLOCKCHAIN_CONTRACT_ADDRESS || '0xe7f1725e7734ce288f8367e1bb143e90bb3f0512',
     privateKey: process.env.BLOCKCHAIN_PRIVATE_KEY || ''
   }
 };
