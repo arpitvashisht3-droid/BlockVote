@@ -1,48 +1,31 @@
-# Dependencies
-node_modules/
-**/node_modules/
+# Node modules
+/node_modules
 
-# Build output
-dist/
-**/dist/
-build/
-**/build/
-bundle/
-**/bundle/
+# Compilation output
+/dist
 
-# Hardhat & Typechain output
-artifacts/
-**/artifacts/
-cache/
-**/cache/
-types/
-**/types/
+# pnpm deploy output
+/bundle
 
-# Environment files & secrets
+# Hardhat Build Artifacts
+/artifacts
+
+# Hardhat compilation (v2) support directory
+/cache
+
+# Typechain output
+/types
+
+# Environment files
 .env
 .env.*
 !.env.example
-**/.env
-**/.env.*
-!**/.env.example
 
-# TypeScript generated files
-*.tsbuildinfo
+# Hardhat coverage reports
+/coverage
 
-# Temporary files & scripts
-tmp/
-temp/
-**/tmp/
-**/temp/
+# Gas snapshot files
+/.gas-snapshot
 
-# Coverage & Snapshots
-coverage/
-**/coverage/
-.gas-snapshot
-snapshots/
-
-# General logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# Snapshot cheatcodes output
+/snapshots
