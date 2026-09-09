@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Bell, Check, KeyRound, Lock, Shield, Sliders } from 'lucide-react'
 import { Button } from '../components/Button'
 import { useDemoAuth } from '../context/DemoAuthContext'
+import { getApiBaseUrl } from '../data/apiConfig'
 
 export function SettingsPage() {
   const { user } = useDemoAuth()
@@ -48,7 +49,7 @@ export function SettingsPage() {
     setPasswordLoading(true)
     try {
       const token = localStorage.getItem('blockvote_auth_token')
-      const res = await fetch('/api/users/profile', {
+      const res = await fetch(`${getApiBaseUrl()}/users/profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

@@ -195,6 +195,8 @@ export function mapBackendElectionToFrontend(item: any): Election {
   }
 }
 
+import { getApiBaseUrl } from './apiConfig'
+
 export async function fetchBackendElections(conductorOnly = false): Promise<Election[]> {
   try {
     const token = localStorage.getItem('blockvote_token') || localStorage.getItem('blockvote_auth_token')
@@ -204,9 +206,7 @@ export async function fetchBackendElections(conductorOnly = false): Promise<Elec
     }
 
     const queryParam = conductorOnly ? '?conductorOnly=true' : ''
-    const apiUrl = typeof window !== 'undefined' && window.location.port === '5173'
-      ? `/api/elections${queryParam}`
-      : `http://localhost:3000/api/elections${queryParam}`
+    const apiUrl = `${getApiBaseUrl()}/elections${queryParam}`
 
     const res = await fetch(apiUrl, { headers })
     if (res.ok) {

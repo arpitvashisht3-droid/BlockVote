@@ -17,6 +17,7 @@ import { TurnoutBreakdown } from '../components/admin/results/TurnoutBreakdown'
 import { VotingActivityChart } from '../components/admin/results/VotingActivityChart'
 import { ElectionCountdown } from '../components/elections/ElectionCountdown'
 import { fetchBackendElections } from '../data/elections'
+import { getApiBaseUrl } from '../data/apiConfig'
 import { Button } from '../components/Button'
 import {
   DEFAULT_RESULTS_ELECTION_ID,
@@ -44,7 +45,7 @@ function ParticipationsSection({ electionId }: { electionId: string }) {
     setLoading(true)
     try {
       const token = localStorage.getItem('blockvote_auth_token')
-      const res = await fetch(`/api/elections/${electionId}/participations`, {
+      const res = await fetch(`${getApiBaseUrl()}/elections/${electionId}/participations`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       })
       const data = await res.json()

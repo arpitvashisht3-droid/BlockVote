@@ -3,6 +3,7 @@ import { AlertCircle, CheckCircle2, KeyRound, Lock, ShieldAlert, Upload } from '
 import { type Election } from '../../data/elections'
 import { Button } from '../Button'
 import { useDemoAuth } from '../../context/DemoAuthContext'
+import { getApiBaseUrl } from '../../data/apiConfig'
 
 type EligibilityGateProps = {
   election: Election
@@ -58,7 +59,7 @@ export function EligibilityGate({ election, children, onVerified }: EligibilityG
         headers['Authorization'] = `Bearer ${token}`
       }
 
-      const response = await fetch(`/api/elections/${election.id}/verify-eligibility`, {
+      const response = await fetch(`${getApiBaseUrl()}/elections/${election.id}/verify-eligibility`, {
         method: 'POST',
         headers,
         body: JSON.stringify({
@@ -82,7 +83,7 @@ export function EligibilityGate({ election, children, onVerified }: EligibilityG
         const formData = new FormData()
         formData.append('collegeId', selectedFile)
 
-        const uploadRes = await fetch(`/api/elections/${election.id}/upload-college-id`, {
+        const uploadRes = await fetch(`${getApiBaseUrl()}/elections/${election.id}/upload-college-id`, {
           method: 'POST',
           headers: token ? { Authorization: `Bearer ${token}` } : {},
           body: formData,

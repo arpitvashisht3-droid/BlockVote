@@ -15,6 +15,7 @@ import {
   type VotingSettings,
 } from './votingSettings'
 import { seedElectionManagement } from './manageElection'
+import { getApiBaseUrl } from './apiConfig'
 
 export {
   electionTypes,
@@ -423,10 +424,7 @@ export async function publishDraftElection(draft: CreateElectionDraft): Promise<
     headers['Authorization'] = `Bearer ${token}`
   }
 
-  // Use full backend URL if running directly or relative path if using Vite proxy
-  const apiUrl = typeof window !== 'undefined' && window.location.port === '5173'
-    ? '/api/elections'
-    : 'http://localhost:3000/api/elections'
+  const apiUrl = `${getApiBaseUrl()}/elections`
 
   try {
     const res = await fetch(apiUrl, {

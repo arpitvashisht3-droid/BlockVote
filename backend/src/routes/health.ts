@@ -9,4 +9,9 @@ router.get('/health', (req: Request, res: Response) => {
   });
 });
 
+// Render-compatible health check endpoint
+router.get('/healthz', (req: Request, res: Response) => {
+  res.json({ status: 'ok' });
+});
+
 export default router;

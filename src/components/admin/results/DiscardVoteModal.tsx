@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { AlertTriangle, Trash2, X } from 'lucide-react'
 import { Button } from '../../Button'
 import { Modal } from '../../Modal'
+import { getApiBaseUrl } from '../../../data/apiConfig'
 
 type DiscardVoteModalProps = {
   open: boolean
@@ -29,7 +30,7 @@ export function DiscardVoteModal({ open, electionId, onClose, onSuccess }: Disca
     setLoading(true)
     try {
       const token = localStorage.getItem('blockvote_auth_token')
-      const response = await fetch(`/api/elections/${electionId}/votes/new/discard`, {
+      const response = await fetch(`${getApiBaseUrl()}/elections/${electionId}/votes/new/discard`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -44,9 +44,14 @@ interface DemoAuthContextType {
   logout: () => void
 }
 
+import { getApiBaseUrl } from '../data/apiConfig'
+
 const TOKEN_KEY = 'blockvote_token'
 const SESSION_KEY = 'blockvote_session'
-const API_BASE_URL = 'http://localhost:3000/api'
+
+function getApiUrl() {
+  return getApiBaseUrl()
+}
 
 const DemoAuthContext = createContext<DemoAuthContextType | undefined>(undefined)
 
@@ -75,7 +80,7 @@ export function DemoAuthProvider({ children }: { children: ReactNode }) {
       }
 
       try {
-        const res = await fetch(`${API_BASE_URL}/users/me`, {
+        const res = await fetch(`${getApiUrl()}/users/me`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -135,7 +140,7 @@ export function DemoAuthProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      const res = await fetch(`${API_BASE_URL}/users/login`, {
+      const res = await fetch(`${getApiUrl()}/users/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: cleanEmail, password: pass, role })
@@ -199,7 +204,7 @@ export function DemoAuthProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      const res = await fetch(`${API_BASE_URL}/users/register`, {
+      const res = await fetch(`${getApiUrl()}/users/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -243,7 +248,7 @@ export function DemoAuthProvider({ children }: { children: ReactNode }) {
     const token = localStorage.getItem(TOKEN_KEY)
     if (token) {
       try {
-        const res = await fetch(`${API_BASE_URL}/users/me`, {
+        const res = await fetch(`${getApiUrl()}/users/me`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -278,7 +283,7 @@ export function DemoAuthProvider({ children }: { children: ReactNode }) {
     const token = localStorage.getItem(TOKEN_KEY)
     if (!token) return user
     try {
-      const res = await fetch(`${API_BASE_URL}/users/me`, {
+      const res = await fetch(`${getApiUrl()}/users/me`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       if (res.ok) {
