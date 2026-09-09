@@ -1,8 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'blockvote_jwt_secret_key_sepolia_2026';
 
 export interface AuthenticatedUser {
   id: string;
   email: string;
+  name?: string;
+  username?: string;
   role: 'voter' | 'admin';
 }
 
@@ -10,27 +15,32 @@ export interface AuthenticatedRequest extends Request {
   user?: AuthenticatedUser;
 }
 
-/**
- * Provider-agnostic token verification helper.
- * Ready to be swapped out with actual JWT or Supabase token verification later.
- */
+export const generateToken = (user: AuthenticatedUser): string => {
+  return jwt.sign(
+    {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      username: user.username,
+      role: user.role
+    },
+    JWT_SECRET,
+    { expiresIn: '7d' }
+  );
+};
+
 export const verifyToken = async (token: string): Promise<AuthenticatedUser | null> => {
   if (!token || token.trim() === '' || token === 'invalid-token') {
     return null;
   }
-
-  // Mock authenticated user payload for valid tokens
-  return {
-    id: 'usr-123',
-    email: 'voter@blockvote.io',
-    role: 'voter'
-  };
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as AuthenticatedUser;
+    return decoded;
+  } catch (err) {
+    return null;
+  }
 };
 
-/**
- * Express Authentication Middleware
- * Validates 'Authorization: Bearer <token>' header and attaches user info to request.
- */
 export const authenticateUser = async (
   req: AuthenticatedRequest,
   res: Response,

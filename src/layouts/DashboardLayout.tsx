@@ -31,20 +31,22 @@ export function DashboardLayout({ variant = 'voter' }: DashboardLayoutProps) {
   }, [menuOpen])
 
   return (
-    <div className="flex min-h-dvh bg-surface">
-      <aside className="hidden w-64 shrink-0 md:flex md:flex-col">
+    <div className="min-h-screen bg-surface">
+      {/* Desktop Persistent Fixed Sidebar */}
+      <aside className="hidden w-64 md:fixed md:inset-y-0 md:left-0 md:z-30 md:flex md:flex-col border-r border-white/10 bg-navy shadow-xl">
         {isAdmin ? <AdminSidebar /> : <DashboardSidebar />}
       </aside>
 
+      {/* Mobile Drawer */}
       {menuOpen ? (
-        <div className="fixed inset-0 z-50 md:hidden">
+        <div className="fixed inset-0 z-50 md:hidden flex">
           <button
             type="button"
-            className="absolute inset-0 bg-navy/40"
+            className="fixed inset-0 bg-navy/60 backdrop-blur-sm transition-opacity"
             aria-label={isAdmin ? 'Close admin menu' : 'Close dashboard menu'}
             onClick={() => setMenuOpen(false)}
           />
-          <div className="relative h-full w-72 max-w-[85vw] shadow-lg">
+          <div className="relative z-10 h-full w-72 max-w-[85vw] shadow-2xl bg-navy">
             {isAdmin ? (
               <AdminSidebar onNavigate={() => setMenuOpen(false)} />
             ) : (
@@ -54,13 +56,17 @@ export function DashboardLayout({ variant = 'voter' }: DashboardLayoutProps) {
         </div>
       ) : null}
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        {isAdmin ? (
-          <AdminHeader onMenuClick={() => setMenuOpen(true)} />
-        ) : (
-          <DashboardHeader onMenuClick={() => setMenuOpen(true)} />
-        )}
-        <main className="flex-1 p-4 sm:p-6">
+      {/* Main Content Scroll Container */}
+      <div className="flex min-h-screen flex-col md:pl-64">
+        <header className="sticky top-0 z-20">
+          {isAdmin ? (
+            <AdminHeader onMenuClick={() => setMenuOpen(true)} />
+          ) : (
+            <DashboardHeader onMenuClick={() => setMenuOpen(true)} />
+          )}
+        </header>
+
+        <main className="flex-1 p-4 sm:p-6 lg:p-8">
           <Outlet />
         </main>
       </div>

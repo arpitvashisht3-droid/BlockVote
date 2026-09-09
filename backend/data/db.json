@@ -1,0 +1,130 @@
+{
+  "users": [
+    {
+      "id": "usr-default",
+      "name": "Manan123",
+      "username": "manan123",
+      "email": "manan123@gmail.com",
+      "passwordHash": "$2b$10$TPCZ.ai.3I9P.TArQowEXeFaQRfUPQfZOVwuNe9EkkmsELJrl9Qn.",
+      "walletAddress": "0xd6ac...f51d",
+      "role": "voter",
+      "isVerified": true,
+      "createdAt": "2026-09-09T11:56:42.254Z"
+    },
+    {
+      "id": "usr-1788955005931-533",
+      "name": "Updated Voter Name",
+      "username": "voter_1788955005805",
+      "email": "voter_1788955005805@example.com",
+      "passwordHash": "$2b$10$SKQYTz6ObYywySB8NjqtS.Aa71LsOfOy2fdcXua9JE.OJZJSOEO8u",
+      "phone": "+1-555-9999",
+      "dateOfBirth": "1995-05-15",
+      "countryState": "California, USA",
+      "city": "San Francisco",
+      "walletAddress": "0x1234567890abcdef1234567890abcdef12345678",
+      "role": "voter",
+      "isVerified": true,
+      "createdAt": "2026-09-09T11:56:45.806Z"
+    },
+    {
+      "id": "usr-1788955301825-600",
+      "name": "Eleanor Vance",
+      "username": "eleanor_1788955301678",
+      "email": "eleanor_1788955301678@blockvote.io",
+      "passwordHash": "$2b$10$oT2aLh0Lr.LKXaw1D9eteuTbgiuXX/bJDMuHnaVOp6elfDyDGej72",
+      "phone": "+1 (555) 999-8888",
+      "dateOfBirth": "1992-08-24",
+      "countryState": "New York, USA",
+      "city": "Manhattan",
+      "walletAddress": "0x89205A3A3b2A69De6Dbf7f01ED13B2108B2c43e7",
+      "role": "voter",
+      "isVerified": true,
+      "createdAt": "2026-09-09T12:01:41.679Z"
+    },
+    {
+      "id": "usr-1788955314916-568",
+      "name": "Eleanor Vance",
+      "username": "eleanor_1788955314776",
+      "email": "eleanor_1788955314776@blockvote.io",
+      "passwordHash": "$2b$10$c2cR7FYJLwKjawsjr18j6.vZKr/PaqWwIoSQ2rJDBXGZSdtO.0i9S",
+      "phone": "+1 (555) 999-8888",
+      "dateOfBirth": "1992-08-24",
+      "countryState": "New York, USA",
+      "city": "Manhattan",
+      "walletAddress": "0x89205A3A3b2A69De6Dbf7f01ED13B2108B2c43e7",
+      "role": "voter",
+      "isVerified": true,
+      "createdAt": "2026-09-09T12:01:54.777Z"
+    },
+    {
+      "id": "usr-1788958548626-60",
+      "name": "Varun",
+      "username": "varun212",
+      "email": "varun12@gmail.com",
+      "passwordHash": "$2b$10$JDoLMj6Jkt7wbWfxEBHob.TGvI7CrxYOeDB7EcArZYgljuXqMOAfG",
+      "phone": "1234567889",
+      "dateOfBirth": "2007-05-06",
+      "country": "india",
+      "state": "Delhi",
+      "city": "New Delhi",
+      "walletAddress": "",
+      "role": "voter",
+      "isVerified": true,
+      "createdAt": "2026-09-09T12:55:48.418Z"
+    },
+    {
+      "id": "usr-1788958647865-281",
+      "name": "Jatin",
+      "username": "jatin123",
+      "email": "jatin123@gmail.com",
+      "passwordHash": "$2b$10$GRoO9W5vzxRQPrS3OEpeWeN6P16D5r2quvvM1dHms/lG/NQFwir/.",
+      "phone": "9876543212",
+      "dateOfBirth": "2006-02-03",
+      "country": "India",
+      "state": "Delhi",
+      "city": "Delhi",
+      "walletAddress": "",
+      "role": "admin",
+      "isVerified": true,
+      "createdAt": "2026-09-09T12:57:27.697Z"
+    }
+  ],
+  "elections": [
+    {
+      "id": "elec-1",
+      "title": "Presidential Election 2026",
+      "description": "National General Election",
+      "startDate": "2026-10-01T00:00:00Z",
+      "endDate": "2026-10-02T00:00:00Z",
+      "status": "upcoming",
+      "createdAt": "2026-09-01T00:00:00Z"
+    },
+    {
+      "id": "elec-2",
+      "title": "Student Council Representative",
+      "description": "University Student Body Election",
+      "startDate": "2026-09-01T00:00:00Z",
+      "endDate": "2026-09-15T00:00:00Z",
+      "status": "active",
+      "createdAt": "2026-09-01T00:00:00Z"
+    }
+  ],
+  "candidates": [
+    {
+      "id": "cand-1",
+      "electionId": "elec-2",
+      "name": "Alice Johnson",
+      "party": "Progressive Party",
+      "manifesto": "Decentralized transparency for all.",
+      "createdAt": "2026-09-01T00:00:00Z"
+    },
+    {
+      "id": "cand-2",
+      "electionId": "elec-2",
+      "name": "Bob Smith",
+      "party": "Innovation Party",
+      "manifesto": "Building secure future voting.",
+      "createdAt": "2026-09-01T00:00:00Z"
+    }
+  ]
+}

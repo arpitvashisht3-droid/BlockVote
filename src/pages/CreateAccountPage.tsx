@@ -1,6 +1,6 @@
 import { useState, FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Eye, EyeOff, Lock, Mail, User, Shield, Vote, ArrowRight, ArrowLeft } from 'lucide-react'
+import { Eye, EyeOff, Lock, Mail, User, Shield, Vote, ArrowRight, ArrowLeft, Phone, Calendar, MapPin, AtSign, Globe } from 'lucide-react'
 import { useDemoAuth, type DemoUserRole } from '../context/DemoAuthContext'
 import { Logo } from '../components/Logo'
 import { Button } from '../components/Button'
@@ -10,10 +10,21 @@ export function CreateAccountPage() {
   const { createAccount } = useDemoAuth()
 
   const [selectedRole, setSelectedRole] = useState<DemoUserRole>('voter')
+  
+  // Account Details
   const [fullName, setFullName] = useState('')
+  const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+
+  // Personal Details
+  const [phone, setPhone] = useState('')
+  const [dateOfBirth, setDateOfBirth] = useState('')
+  const [country, setCountry] = useState('')
+  const [state, setState] = useState('')
+  const [city, setCity] = useState('')
+
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -27,13 +38,18 @@ export function CreateAccountPage() {
       return
     }
 
+    if (!username.trim() || username.trim().length < 3) {
+      setError('Username must be at least 3 characters.')
+      return
+    }
+
     if (!email.trim() || !email.includes('@')) {
       setError('Please enter a valid email address.')
       return
     }
 
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters.')
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters.')
       return
     }
 
@@ -45,14 +61,26 @@ export function CreateAccountPage() {
     setLoading(true)
 
     try {
-      const user = await createAccount(fullName, email, password, selectedRole)
+      const user = await createAccount({
+        name: fullName,
+        username: username.trim().toLowerCase(),
+        email,
+        password,
+        phone,
+        dateOfBirth,
+        country,
+        state,
+        city,
+        role: selectedRole
+      })
+
       if (user.role === 'admin') {
         navigate('/admin')
       } else {
         navigate('/dashboard')
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to create account.')
+      setError(err.message || 'Failed to create account. Please check if username or email is already taken.')
     } finally {
       setLoading(false)
     }
@@ -60,13 +88,13 @@ export function CreateAccountPage() {
 
   return (
     <div className="flex min-h-dvh flex-col justify-center bg-gradient-to-b from-navy to-navy-dark px-4 py-12 text-white sm:px-6 lg:px-8">
-      {/* Background Blur */}
+      {/* Decorative Background */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 size-96 rounded-full bg-teal-500/15 blur-3xl" />
         <div className="absolute -bottom-40 -left-40 size-96 rounded-full bg-accent/15 blur-3xl" />
       </div>
 
-      <div className="relative mx-auto w-full max-w-md">
+      <div className="relative mx-auto w-full max-w-2xl">
         {/* Top Back Link */}
         <Link
           to="/signin"
@@ -83,14 +111,14 @@ export function CreateAccountPage() {
             Create Account
           </h2>
           <p className="mt-2 text-sm text-slate-300">
-            Join BlockVote secure voting platform
+            Join BlockVote secure decentralized voting platform
           </p>
         </div>
 
         {/* Form Card */}
-        <div className="mt-6 rounded-2xl border border-white/10 bg-navy-light/80 p-6 shadow-2xl backdrop-blur-xl sm:p-8">
+        <div className="mt-6 rounded-2xl border border-white/10 bg-navy-light/90 p-6 shadow-2xl backdrop-blur-xl sm:p-8">
           {/* Role Selection Tabs */}
-          <div className="mb-5">
+          <div className="mb-6">
             <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">
               Register As
             </label>
@@ -125,130 +153,246 @@ export function CreateAccountPage() {
           {error ? (
             <div
               role="alert"
-              className="mb-5 rounded-xl border border-red-500/30 bg-red-500/10 p-3.5 text-sm text-red-200"
+              className="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200"
             >
               {error}
             </div>
           ) : null}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label
-                htmlFor="fullName"
-                className="block text-xs font-semibold uppercase tracking-wider text-slate-300"
-              >
-                Full Name
-              </label>
-              <div className="relative mt-1.5">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
-                  <User className="size-4" />
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* ACCOUNT DETAILS SECTION */}
+            <div className="space-y-4">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-accent border-b border-white/10 pb-2">
+                1. Account Details
+              </h3>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <label htmlFor="fullName" className="block text-xs font-semibold text-slate-300">
+                    Full Name *
+                  </label>
+                  <div className="relative mt-1.5">
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                      <User className="size-4" />
+                    </div>
+                    <input
+                      id="fullName"
+                      type="text"
+                      required
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      placeholder="Manan Sharma"
+                      className="w-full rounded-xl border border-white/10 bg-white/5 py-2.5 pl-9 pr-3 text-sm text-white placeholder-slate-400 focus:border-accent focus:bg-white/10 focus:outline-none focus:ring-1 focus:ring-accent"
+                    />
+                  </div>
                 </div>
-                <input
-                  id="fullName"
-                  type="text"
-                  required
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Jane Doe"
-                  className="w-full rounded-xl border border-white/10 bg-white/5 py-2.5 pl-10 pr-3.5 text-sm text-white placeholder-slate-400 transition-colors focus:border-accent focus:bg-white/10 focus:outline-none focus:ring-1 focus:ring-accent"
-                />
+
+                <div>
+                  <label htmlFor="username" className="block text-xs font-semibold text-slate-300">
+                    Username (Unique) *
+                  </label>
+                  <div className="relative mt-1.5">
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                      <AtSign className="size-4" />
+                    </div>
+                    <input
+                      id="username"
+                      type="text"
+                      required
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s+/g, ''))}
+                      placeholder="manan123"
+                      className="w-full rounded-xl border border-white/10 bg-white/5 py-2.5 pl-9 pr-3 text-sm text-white placeholder-slate-400 focus:border-accent focus:bg-white/10 focus:outline-none focus:ring-1 focus:ring-accent"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="email" className="block text-xs font-semibold text-slate-300">
+                  Email Address *
+                </label>
+                <div className="relative mt-1.5">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                    <Mail className="size-4" />
+                  </div>
+                  <input
+                    id="email"
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="manan123@gmail.com"
+                    className="w-full rounded-xl border border-white/10 bg-white/5 py-2.5 pl-9 pr-3 text-sm text-white placeholder-slate-400 focus:border-accent focus:bg-white/10 focus:outline-none focus:ring-1 focus:ring-accent"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <label htmlFor="password" className="block text-xs font-semibold text-slate-300">
+                    Password (min 8 chars) *
+                  </label>
+                  <div className="relative mt-1.5">
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                      <Lock className="size-4" />
+                    </div>
+                    <input
+                      id="password"
+                      type={showPassword ? 'text' : 'password'}
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="w-full rounded-xl border border-white/10 bg-white/5 py-2.5 pl-9 pr-9 text-sm text-white placeholder-slate-400 focus:border-accent focus:bg-white/10 focus:outline-none focus:ring-1 focus:ring-accent"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-white"
+                    >
+                      {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="confirmPassword" className="block text-xs font-semibold text-slate-300">
+                    Confirm Password *
+                  </label>
+                  <div className="relative mt-1.5">
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                      <Lock className="size-4" />
+                    </div>
+                    <input
+                      id="confirmPassword"
+                      type="password"
+                      required
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="w-full rounded-xl border border-white/10 bg-white/5 py-2.5 pl-9 pr-3 text-sm text-white placeholder-slate-400 focus:border-accent focus:bg-white/10 focus:outline-none focus:ring-1 focus:ring-accent"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-xs font-semibold uppercase tracking-wider text-slate-300"
-              >
-                Email Address
-              </label>
-              <div className="relative mt-1.5">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
-                  <Mail className="size-4" />
-                </div>
-                <input
-                  id="email"
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder={
-                    selectedRole === 'admin'
-                      ? 'conductor@example.com'
-                      : 'voter@example.com'
-                  }
-                  className="w-full rounded-xl border border-white/10 bg-white/5 py-2.5 pl-10 pr-3.5 text-sm text-white placeholder-slate-400 transition-colors focus:border-accent focus:bg-white/10 focus:outline-none focus:ring-1 focus:ring-accent"
-                />
-              </div>
-            </div>
+            {/* PERSONAL DETAILS SECTION */}
+            <div className="space-y-4 pt-2">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-accent border-b border-white/10 pb-2">
+                2. Personal Details (Optional)
+              </h3>
 
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-xs font-semibold uppercase tracking-wider text-slate-300"
-              >
-                Password
-              </label>
-              <div className="relative mt-1.5">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
-                  <Lock className="size-4" />
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <label htmlFor="phone" className="block text-xs font-semibold text-slate-300">
+                    Phone Number (e.g. +91 98765 43210)
+                  </label>
+                  <div className="relative mt-1.5">
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                      <Phone className="size-4" />
+                    </div>
+                    <input
+                      id="phone"
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="+91 98765 43210"
+                      className="w-full rounded-xl border border-white/10 bg-white/5 py-2.5 pl-9 pr-3 text-sm text-white placeholder-slate-400 focus:border-accent focus:bg-white/10 focus:outline-none focus:ring-1 focus:ring-accent"
+                    />
+                  </div>
                 </div>
-                <input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full rounded-xl border border-white/10 bg-white/5 py-2.5 pl-10 pr-10 text-sm text-white placeholder-slate-400 transition-colors focus:border-accent focus:bg-white/10 focus:outline-none focus:ring-1 focus:ring-accent"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 transition-colors hover:text-white"
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
-                >
-                  {showPassword ? (
-                    <EyeOff className="size-4" />
-                  ) : (
-                    <Eye className="size-4" />
-                  )}
-                </button>
-              </div>
-            </div>
 
-            <div>
-              <label
-                htmlFor="confirmPassword"
-                className="block text-xs font-semibold uppercase tracking-wider text-slate-300"
-              >
-                Confirm Password
-              </label>
-              <div className="relative mt-1.5">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
-                  <Lock className="size-4" />
+                <div>
+                  <label htmlFor="dateOfBirth" className="block text-xs font-semibold text-slate-300">
+                    Date of Birth
+                  </label>
+                  <div className="relative mt-1.5">
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                      <Calendar className="size-4" />
+                    </div>
+                    <input
+                      id="dateOfBirth"
+                      type="date"
+                      value={dateOfBirth}
+                      onChange={(e) => setDateOfBirth(e.target.value)}
+                      className="w-full rounded-xl border border-white/10 bg-white/5 py-2.5 pl-9 pr-3 text-sm text-white placeholder-slate-400 focus:border-accent focus:bg-white/10 focus:outline-none focus:ring-1 focus:ring-accent"
+                    />
+                  </div>
                 </div>
-                <input
-                  id="confirmPassword"
-                  type="password"
-                  required
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full rounded-xl border border-white/10 bg-white/5 py-2.5 pl-10 pr-3.5 text-sm text-white placeholder-slate-400 transition-colors focus:border-accent focus:bg-white/10 focus:outline-none focus:ring-1 focus:ring-accent"
-                />
+              </div>
+
+              {/* SEPARATE COUNTRY, STATE, AND CITY COLUMNS */}
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div>
+                  <label htmlFor="country" className="block text-xs font-semibold text-slate-300">
+                    Country
+                  </label>
+                  <div className="relative mt-1.5">
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                      <Globe className="size-4" />
+                    </div>
+                    <input
+                      id="country"
+                      type="text"
+                      value={country}
+                      onChange={(e) => setCountry(e.target.value)}
+                      placeholder="India"
+                      className="w-full rounded-xl border border-white/10 bg-white/5 py-2.5 pl-9 pr-3 text-sm text-white placeholder-slate-400 focus:border-accent focus:bg-white/10 focus:outline-none focus:ring-1 focus:ring-accent"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="state" className="block text-xs font-semibold text-slate-300">
+                    State
+                  </label>
+                  <div className="relative mt-1.5">
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                      <MapPin className="size-4" />
+                    </div>
+                    <input
+                      id="state"
+                      type="text"
+                      value={state}
+                      onChange={(e) => setState(e.target.value)}
+                      placeholder="Maharashtra"
+                      className="w-full rounded-xl border border-white/10 bg-white/5 py-2.5 pl-9 pr-3 text-sm text-white placeholder-slate-400 focus:border-accent focus:bg-white/10 focus:outline-none focus:ring-1 focus:ring-accent"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="city" className="block text-xs font-semibold text-slate-300">
+                    City
+                  </label>
+                  <div className="relative mt-1.5">
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                      <MapPin className="size-4" />
+                    </div>
+                    <input
+                      id="city"
+                      type="text"
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      placeholder="Mumbai"
+                      className="w-full rounded-xl border border-white/10 bg-white/5 py-2.5 pl-9 pr-3 text-sm text-white placeholder-slate-400 focus:border-accent focus:bg-white/10 focus:outline-none focus:ring-1 focus:ring-accent"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
 
             <Button
               type="submit"
               disabled={loading}
-              className="mt-4 flex w-full items-center justify-center gap-2 py-3 text-sm font-semibold"
+              className="mt-6 flex w-full items-center justify-center gap-2 py-3.5 text-sm font-semibold"
             >
               {loading
                 ? 'Creating Account...'
                 : selectedRole === 'admin'
-                ? 'Create Election Conductor Account'
+                ? 'Create Conductor Account'
                 : 'Create Voter Account'}
               {!loading && <ArrowRight className="size-4" />}
             </Button>

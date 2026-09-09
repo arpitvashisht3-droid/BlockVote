@@ -1,0 +1,5 @@
+﻿src/App.tsx(1,10): error TS2305: Module '"react"' has no exported member 'Navigate'.
+src/App.tsx(1,20): error TS2305: Module '"react"' has no exported member 'Route'.
+src/App.tsx(1,27): error TS2305: Module '"react"' has no exported member 'Routes'.
+src/components/dashboard/DashboardSidebar.tsx(63,48): error TS2339: Property 'end' does not exist on type '{ readonly to: "/dashboard"; readonly label: "Dashboard"; readonly icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>; readonly end: true; } | { ...; } | { ...; } | { ...; } | { ...; }'.
+  Property 'end' does not exist on type '{ readonly to: "/dashboard/elections"; readonly label: "Elections"; readonly icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>; }'.
