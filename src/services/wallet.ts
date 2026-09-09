@@ -97,6 +97,21 @@ let connectingPromise: Promise<string | null> | null = null;
  * connectWallet — robust browser wallet connection with duplicate-request guard.
  * Targets Ethereum Sepolia Testnet (Chain ID: 11155111).
  */
+export async function getConnectedAccount(): Promise<string | null> {
+  if (typeof window === 'undefined' || !(window as any).ethereum) {
+    return null;
+  }
+  try {
+    const existing: string[] = await (window as any).ethereum.request({ method: 'eth_accounts' });
+    if (existing && existing.length > 0) {
+      return existing[0];
+    }
+  } catch {
+    // Ignore
+  }
+  return null;
+}
+
 export async function connectWallet(): Promise<string | null> {
   if (typeof window === 'undefined' || !(window as any).ethereum) {
     return null;
@@ -106,9 +121,9 @@ export async function connectWallet(): Promise<string | null> {
 
   // Step 1: check already-connected accounts (no popup)
   try {
-    const existing: string[] = await ethereum.request({ method: 'eth_accounts' });
-    if (existing && existing.length > 0) {
-      return existing[0];
+    const existing = await getConnectedAccount();
+    if (existing) {
+      return existing;
     }
   } catch {
     // eth_accounts is always available; ignore unexpected errors and continue
