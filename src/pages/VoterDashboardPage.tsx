@@ -9,7 +9,7 @@ import { UpcomingElectionCard } from '../components/dashboard/UpcomingElectionCa
 import { VerificationStatusCard } from '../components/dashboard/VerificationStatusCard'
 import { VoterStatus } from '../components/dashboard/VoterStatus'
 import { useDemoAuth } from '../context/DemoAuthContext'
-import { getSessionElections, type Election } from '../data/elections'
+import { fetchBackendElections, getSessionElections, type Election } from '../data/elections'
 import type { DashboardStat } from '../data/dashboard'
 import {
   chainElectionToElection,
@@ -25,18 +25,19 @@ export function VoterDashboardPage() {
     let mounted = true
     async function load() {
       try {
+        const backendElections = await fetchBackendElections()
         const chainData = await fetchElectionsFromChain()
         const mapped = chainData.map(chainElectionToElection)
-        const session = getSessionElections()
-        const combined = [...session]
+        const combined = [...backendElections]
         for (const c of mapped) {
-          if (!combined.some((e) => e.onchainId === c.onchainId)) {
+          if (!combined.some((e) => e.onchainId === c.onchainId || e.id === c.id)) {
             combined.push(c)
           }
         }
         if (mounted) setElections(combined)
       } catch (err) {
         console.error('Failed to load elections:', err)
+        if (mounted) setElections(getSessionElections())
       } finally {
         if (mounted) setLoading(false)
       }
@@ -47,7 +48,7 @@ export function VoterDashboardPage() {
     }
   }, [])
 
-  const activeElections = elections.filter((e) => e.status === 'live')
+  const activeElections = elections.filter((e) => e.status === 'live' || (e.status as string) === 'active')
   const upcomingElections = elections.filter((e) => e.status === 'upcoming')
   const totalVotes = elections.reduce((sum, e) => sum + (e.voteCount ?? 0), 0)
 

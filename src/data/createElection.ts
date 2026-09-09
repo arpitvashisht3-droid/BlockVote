@@ -68,6 +68,13 @@ export type ElectionDetailsFields = {
   organization: string
   electionCode: string
   slug: string
+  // Type-specific eligibility fields
+  societyName: string
+  collegeName: string
+  collegeId: string
+  universityName: string
+  secretCode: string  // entered by conductor, hashed on backend — never stored plaintext in DB
+  maxVoters: string   // string input, parsed to number (empty means unlimited)
 }
 
 export type CreateElectionDraft = {
@@ -78,7 +85,18 @@ export type CreateElectionDraft = {
 
 export type DetailsErrors = Partial<
   Record<
-    'name' | 'description' | 'startDate' | 'startTime' | 'endDate' | 'endTime',
+    | 'name'
+    | 'description'
+    | 'startDate'
+    | 'startTime'
+    | 'endDate'
+    | 'endTime'
+    | 'secretCode'
+    | 'societyName'
+    | 'collegeName'
+    | 'collegeId'
+    | 'universityName'
+    | 'maxVoters',
     string
   >
 >
@@ -90,7 +108,7 @@ export type CandidateErrors = Partial<
 export const defaultDetails: ElectionDetailsFields = {
   name: '',
   description: '',
-  type: 'Student Election',
+  type: 'Society Election',
   startDate: '',
   startTime: '09:00',
   endDate: '',
@@ -98,6 +116,12 @@ export const defaultDetails: ElectionDetailsFields = {
   organization: '',
   electionCode: '',
   slug: '',
+  societyName: '',
+  collegeName: '',
+  collegeId: '',
+  universityName: '',
+  secretCode: '',
+  maxVoters: '',
 }
 
 export const defaultCandidates: DraftCandidate[] = []
@@ -117,7 +141,7 @@ export function createInitialDraft(): CreateElectionDraft {
     details: {
       name: '',
       description: '',
-      type: 'Student Election',
+      type: 'Society Election',
       startDate: toDateStr(tomorrow),
       startTime: '09:00',
       endDate: toDateStr(nextWeek),
@@ -125,6 +149,12 @@ export function createInitialDraft(): CreateElectionDraft {
       organization: '',
       electionCode: code,
       slug: generateSlug(code),
+      societyName: '',
+      collegeName: '',
+      collegeId: '',
+      universityName: '',
+      secretCode: '',
+      maxVoters: '',
     },
     // No pre-filled candidates — admins enter real candidates
     candidates: [],
@@ -188,6 +218,31 @@ export function validateDetails(details: ElectionDetailsFields): DetailsErrors {
     errors.endTime = 'End must be after the start date and time.'
   }
 
+  // Type-specific validation
+  if (!details.secretCode.trim()) {
+    errors.secretCode = 'A secret code is required for eligibility verification.'
+  }
+
+  if (details.type === 'Society Election' && !details.societyName.trim()) {
+    errors.societyName = 'Society name is required.'
+  }
+
+  if (details.type === 'College Election') {
+    if (!details.collegeName.trim()) errors.collegeName = 'College name is required.'
+    if (!details.collegeId.trim()) errors.collegeId = 'College ID/identifier is required.'
+  }
+
+  if (details.type === 'University Election' && !details.universityName.trim()) {
+    errors.universityName = 'University name is required.'
+  }
+
+  if (details.maxVoters && details.maxVoters.trim()) {
+    const num = Number(details.maxVoters)
+    if (isNaN(num) || num <= 0 || !Number.isInteger(num)) {
+      errors.maxVoters = 'Voter cap must be a positive whole number.'
+    }
+  }
+
   return errors
 }
 
@@ -244,7 +299,7 @@ export function formatDateTimeLabel(date: string, time: string) {
   }
 
   const day = parsed.getDate()
-  const month = parsed.toLocaleString('en-GB', { month: 'short' })
+  const month = parsed.toLocaleString('en-US', { month: 'short' })
   const year = parsed.getFullYear()
   const minutes = String(parsed.getMinutes()).padStart(2, '0')
   const hours24 = parsed.getHours()
@@ -252,7 +307,7 @@ export function formatDateTimeLabel(date: string, time: string) {
   const hours = hours24 % 12 || 12
   const hourLabel = String(hours).padStart(2, '0')
 
-  return `${day} ${month} ${year}, ${hourLabel}:${minutes} ${meridiem}`
+  return `${month} ${day}, ${year}, ${hourLabel}:${minutes} ${meridiem}`
 }
 
 export function booleanLabel(value: boolean) {
@@ -306,6 +361,13 @@ export function draftToElection(draft: CreateElectionDraft): Election {
   const title = draft.details.name.trim()
   const description = draft.details.description.trim()
 
+  const maxVotersNum = draft.details.maxVoters ? Number(draft.details.maxVoters) : undefined
+  const startObj = parseElectionDate(draft.details.startDate, draft.details.startTime)
+  const endObj = parseElectionDate(draft.details.endDate, draft.details.endTime)
+
+  const startDateRaw = startObj ? startObj.toISOString() : `${draft.details.startDate}T${draft.details.startTime}:00`
+  const endDateRaw = endObj ? endObj.toISOString() : `${draft.details.endDate}T${draft.details.endTime}:00`
+
   return {
     id: draft.details.slug,
     title,
@@ -315,6 +377,8 @@ export function draftToElection(draft: CreateElectionDraft): Election {
     electionCode: draft.details.electionCode,
     startDate: startLabel,
     endDate: endLabel,
+    startDateRaw,
+    endDateRaw,
     voterStatus:
       status === 'live'
         ? 'Eligible to vote'
@@ -331,16 +395,80 @@ export function draftToElection(draft: CreateElectionDraft): Election {
     thumbnail: { icon: 'landmark', tone: 'navy' },
     organization: draft.details.organization.trim() || undefined,
     electionType: draft.details.type,
+    societyName: draft.details.societyName.trim() || undefined,
+    collegeName: draft.details.collegeName.trim() || undefined,
+    collegeId: draft.details.collegeId.trim() || undefined,
+    universityName: draft.details.universityName.trim() || undefined,
+    maxVoters: maxVotersNum && !isNaN(maxVotersNum) ? maxVotersNum : undefined,
     published: true,
   }
 }
 
-export function publishDraftElection(draft: CreateElectionDraft) {
+export async function publishDraftElection(draft: CreateElectionDraft): Promise<Election> {
   const election = draftToElection(draft)
   registerSessionElection(election)
   seedElectionManagement(election, {
     organization: draft.details.organization.trim() || 'Not specified',
     settings: { ...draft.settings },
   })
+
+  // Post to backend REST API for persistent JSON database storage
+  const token = localStorage.getItem('blockvote_token') || localStorage.getItem('blockvote_auth_token')
+  const maxVotersNum = draft.details.maxVoters ? Number(draft.details.maxVoters) : undefined
+
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  }
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
+  }
+
+  // Use full backend URL if running directly or relative path if using Vite proxy
+  const apiUrl = typeof window !== 'undefined' && window.location.port === '5173'
+    ? '/api/elections'
+    : 'http://localhost:3000/api/elections'
+
+  try {
+    const res = await fetch(apiUrl, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        id: election.id,
+        title: election.title,
+        description: election.description,
+        type: election.electionType,
+        startDate: election.startDateRaw,
+        endDate: election.endDateRaw,
+        status: election.status,
+        societyName: draft.details.societyName,
+        collegeName: draft.details.collegeName,
+        collegeId: draft.details.collegeId,
+        universityName: draft.details.universityName,
+        secretCode: draft.details.secretCode, // server hashes with bcrypt
+        maxVoters: maxVotersNum && !isNaN(maxVotersNum) ? maxVotersNum : undefined,
+        candidates: election.candidates.map((cand) => ({
+          name: cand.name,
+          department: cand.department,
+          position: cand.position,
+          manifesto: cand.about,
+        })),
+      }),
+    })
+
+    const resData = await res.json()
+    if (!res.ok || !resData.success) {
+      throw new Error(resData.message || 'Failed to save election to backend JSON database')
+    }
+
+    if (resData.data?.id) {
+      election.id = resData.data.id
+      registerSessionElection(election)
+    }
+  } catch (err: any) {
+    console.error('Database write error during publishDraftElection:', err)
+    // If backend is down or failed, throw so success state is NOT shown falsely
+    throw new Error(err?.message || 'Election could not be saved to backend database.')
+  }
+
   return election
 }

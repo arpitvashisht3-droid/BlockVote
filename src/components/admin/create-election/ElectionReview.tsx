@@ -50,11 +50,22 @@ export function ElectionReview({ draft }: ElectionReviewProps) {
           <ReviewRow label="Type" value={details.type} />
           <ReviewRow label="Start" value={start} />
           <ReviewRow label="End" value={end} />
-          <ReviewRow
-            label="Organization"
-            value={details.organization.trim() || 'Not specified'}
-          />
+          <ReviewRow label="Organization" value={details.organization.trim() || 'Not specified'} />
           <ReviewRow label="Election ID" value={details.electionCode} />
+          {details.type === 'Society Election' && details.societyName && (
+            <ReviewRow label="Society Name" value={details.societyName} />
+          )}
+          {details.type === 'College Election' && (
+            <>
+              {details.collegeName && <ReviewRow label="College Name" value={details.collegeName} />}
+              {details.collegeId && <ReviewRow label="College Code" value={details.collegeId} />}
+            </>
+          )}
+          {details.type === 'University Election' && details.universityName && (
+            <ReviewRow label="University Name" value={details.universityName} />
+          )}
+          <ReviewRow label="Secret Code" value={details.secretCode ? '•••••••• (Hashed Server-Side)' : 'Not set'} />
+          <ReviewRow label="Voter Capacity Cap" value={details.maxVoters ? `${details.maxVoters} voters max` : 'Unlimited'} />
         </div>
       </ReviewBlock>
 

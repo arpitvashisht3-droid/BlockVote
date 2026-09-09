@@ -74,3 +74,23 @@ export const authenticateUser = async (
     next(error);
   }
 };
+
+export const optionalAuthenticateUser = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.substring(7).trim();
+      const user = await verifyToken(token);
+      if (user) {
+        req.user = user;
+      }
+    }
+    next();
+  } catch (error) {
+    next();
+  }
+};

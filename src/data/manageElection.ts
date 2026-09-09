@@ -221,7 +221,8 @@ export function applyElectionStatus(
 }
 
 export function parseDisplayDateTime(value: string) {
-  const parsed = new Date(value.replace(',', ''))
+  if (!value) return null
+  const parsed = new Date(value.includes('T') ? value : value.replace(/,/g, ''))
   if (Number.isNaN(parsed.getTime())) {
     return null
   }
@@ -360,10 +361,16 @@ export function duplicateElection(state: ElectionManagement): ElectionManagement
   return duplicated
 }
 
-export function listAdminElections() {
+export function listAdminElections(conductorId?: string) {
   return getAllElections()
     .map((election) => getElectionManagement(election.id))
-    .filter((item): item is ElectionManagement => item != null && !item.archived)
+    .filter((item): item is ElectionManagement => {
+      if (!item || item.archived) return false
+      if (conductorId && item.election.conductorId) {
+        return item.election.conductorId === conductorId
+      }
+      return true
+    })
 }
 
 export function archiveElectionById(id: string) {

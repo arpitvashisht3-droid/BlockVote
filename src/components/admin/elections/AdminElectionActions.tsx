@@ -71,17 +71,15 @@ export function AdminElectionActions({
       >
         View Public Election
       </Link>
-      {showResults ? (
-        <Link
-          to={`/elections/${election.id}/results`}
-          className={buttonClassName({
-            variant: 'ghost',
-            className: 'w-full',
-          })}
-        >
-          View Results
-        </Link>
-      ) : null}
+      <Link
+        to={`/admin/elections/${election.id}/results`}
+        className={buttonClassName({
+          variant: 'ghost',
+          className: 'w-full',
+        })}
+      >
+        View Results & Audit
+      </Link>
       <div className={`relative ${layout === 'card' ? '' : 'self-end'}`} ref={menuRef}>
         <button
           type="button"

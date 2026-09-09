@@ -83,15 +83,21 @@ export function CreateElectionPage() {
     }, 3500)
   }
 
-  function handlePublish() {
+  const [publishError, setPublishError] = useState<string | null>(null)
+
+  async function handlePublish() {
     setPublishing(true)
-    publishDraftElection(draft)
-    window.clearTimeout(publishTimer.current)
-    publishTimer.current = window.setTimeout(() => {
+    setPublishError(null)
+    try {
+      await publishDraftElection(draft)
       setPublishing(false)
       setPublishOpen(false)
       setPublished(true)
-    }, 900)
+    } catch (err: any) {
+      console.error('Publish error:', err)
+      setPublishError(err?.message || 'Failed to publish election to database.')
+      setPublishing(false)
+    }
   }
 
   if (published) {
@@ -242,12 +248,22 @@ export function CreateElectionPage() {
         </div>
       ) : null}
 
+      {publishError ? (
+        <div
+          role="alert"
+          className="fixed left-1/2 bottom-6 z-50 -translate-x-1/2 rounded-xl border border-red-400/40 bg-red-950/90 px-5 py-3 text-sm font-semibold text-red-200 shadow-2xl"
+        >
+          ⚠️ {publishError}
+        </div>
+      ) : null}
+
       <PublishElectionModal
         open={publishOpen}
         publishing={publishing}
         onClose={() => {
           if (!publishing) {
             setPublishOpen(false)
+            setPublishError(null)
           }
         }}
         onConfirm={handlePublish}

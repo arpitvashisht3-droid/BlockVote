@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import bcrypt from 'bcryptjs';
 import { supabaseService } from '../services/supabaseService';
 import { generateToken, AuthenticatedRequest } from '../middleware/auth';
 
@@ -15,8 +16,12 @@ export class UserController {
         country,
         state,
         city,
+        countryState,
         walletAddress,
-        role
+        role,
+        collegeName,
+        collegeId,
+        enrollmentNumber,
       } = req.body;
 
       if (!name || typeof name !== 'string' || !name.trim()) {
@@ -60,8 +65,12 @@ export class UserController {
         country,
         state,
         city,
+        countryState,
         walletAddress,
-        role: role === 'admin' ? 'admin' : 'voter'
+        role: role === 'admin' ? 'admin' : 'voter',
+        collegeName,
+        collegeId,
+        enrollmentNumber,
       });
 
       const token = generateToken({
@@ -69,17 +78,14 @@ export class UserController {
         email: newUser.email,
         name: newUser.name,
         username: newUser.username,
-        role: newUser.role
+        role: newUser.role,
       });
 
       const { passwordHash: _, ...safeUser } = newUser;
 
       res.status(201).json({
         success: true,
-        data: {
-          user: safeUser,
-          token
-        }
+        data: { user: safeUser, token },
       });
     } catch (error: any) {
       if (error.message && error.message.includes('already taken')) {
@@ -123,18 +129,12 @@ export class UserController {
         email: user.email,
         name: user.name,
         username: user.username,
-        role: user.role
+        role: user.role,
       });
 
       const { passwordHash: _, ...safeUser } = user;
 
-      res.json({
-        success: true,
-        data: {
-          user: safeUser,
-          token
-        }
-      });
+      res.json({ success: true, data: { user: safeUser, token } });
     } catch (error) {
       next(error);
     }
@@ -151,7 +151,6 @@ export class UserController {
         res.status(404).json({ success: false, message: 'User profile not found' });
         return;
       }
-
       const { passwordHash: _, ...safeUser } = user;
       res.json({ success: true, data: safeUser });
     } catch (error) {
@@ -166,9 +165,32 @@ export class UserController {
         return;
       }
 
-      const updates = req.body;
+      const updates = { ...req.body };
+      // Strip any attempt to directly set passwordHash
       delete updates.passwordHash;
       delete updates.id;
+      delete updates.email; // email changes require a separate verified flow
+
+      // Handle password change
+      if (updates.newPassword && updates.currentPassword) {
+        const user = await supabaseService.getUserById(req.user.id);
+        if (!user || !user.passwordHash) {
+          res.status(400).json({ success: false, message: 'Cannot verify current password.' });
+          return;
+        }
+        const valid = await supabaseService.verifyPassword(updates.currentPassword, user.passwordHash);
+        if (!valid) {
+          res.status(400).json({ success: false, message: 'Current password is incorrect.' });
+          return;
+        }
+        if (updates.newPassword.length < 8) {
+          res.status(400).json({ success: false, message: 'New password must be at least 8 characters.' });
+          return;
+        }
+        // Pass new password through for hashing
+        // supabaseService.updateUser handles (data as any).newPassword
+      }
+      delete updates.currentPassword;
 
       const updatedUser = await supabaseService.updateUser(req.user.id, updates);
       if (!updatedUser) {
@@ -191,12 +213,10 @@ export class UserController {
     try {
       const { id } = req.params;
       const user = await supabaseService.getUserById(id);
-
       if (!user) {
         res.status(404).json({ success: false, message: 'User not found' });
         return;
       }
-
       const { passwordHash: _, ...safeUser } = user;
       res.json({ success: true, data: safeUser });
     } catch (error) {

@@ -27,6 +27,7 @@ export function CandidateList({
 
   function handleSave(
     candidate: Omit<DraftCandidate, 'id'> & { id?: string },
+    keepOpen?: boolean,
   ) {
     if (candidate.id) {
       onChange(
@@ -44,7 +45,9 @@ export function CandidateList({
       ])
     }
 
-    closeForm()
+    if (!keepOpen) {
+      closeForm()
+    }
   }
 
   return (

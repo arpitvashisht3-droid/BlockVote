@@ -154,6 +154,111 @@ export function ElectionDetailsForm({
         </div>
       </div>
 
+      {/* Type-Specific Eligibility Configuration Fields */}
+      {value.type === 'Society Election' && (
+        <div>
+          <label htmlFor="society-name" className="field-label">
+            Society Name <span className="text-rose-600">*</span>
+          </label>
+          <input
+            id="society-name"
+            className={`field-input ${errors.societyName ? 'field-input-error' : ''}`}
+            value={value.societyName}
+            placeholder="e.g. Computer Science Society"
+            aria-invalid={Boolean(errors.societyName)}
+            onChange={(e) => onChange({ societyName: e.target.value })}
+          />
+          <FieldError id="society-name-error" message={errors.societyName} />
+        </div>
+      )}
+
+      {value.type === 'College Election' && (
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label htmlFor="college-name" className="field-label">
+              College Name <span className="text-rose-600">*</span>
+            </label>
+            <input
+              id="college-name"
+              className={`field-input ${errors.collegeName ? 'field-input-error' : ''}`}
+              value={value.collegeName}
+              placeholder="e.g. St. Xavier's College"
+              aria-invalid={Boolean(errors.collegeName)}
+              onChange={(e) => onChange({ collegeName: e.target.value })}
+            />
+            <FieldError id="college-name-error" message={errors.collegeName} />
+          </div>
+          <div>
+            <label htmlFor="college-id-field" className="field-label">
+              College ID / Code <span className="text-rose-600">*</span>
+            </label>
+            <input
+              id="college-id-field"
+              className={`field-input ${errors.collegeId ? 'field-input-error' : ''}`}
+              value={value.collegeId}
+              placeholder="e.g. SXC-2026"
+              aria-invalid={Boolean(errors.collegeId)}
+              onChange={(e) => onChange({ collegeId: e.target.value })}
+            />
+            <FieldError id="college-id-error" message={errors.collegeId} />
+          </div>
+        </div>
+      )}
+
+      {value.type === 'University Election' && (
+        <div>
+          <label htmlFor="university-name" className="field-label">
+            University Name <span className="text-rose-600">*</span>
+          </label>
+          <input
+            id="university-name"
+            className={`field-input ${errors.universityName ? 'field-input-error' : ''}`}
+            value={value.universityName}
+            placeholder="e.g. Delhi University"
+            aria-invalid={Boolean(errors.universityName)}
+            onChange={(e) => onChange({ universityName: e.target.value })}
+          />
+          <FieldError id="university-name-error" message={errors.universityName} />
+        </div>
+      )}
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label htmlFor="secret-code" className="field-label">
+            Secret Access Code <span className="text-rose-600">*</span>
+          </label>
+          <input
+            id="secret-code"
+            type="password"
+            className={`field-input ${errors.secretCode ? 'field-input-error' : ''}`}
+            value={value.secretCode}
+            placeholder="Set a secret passcode for voters"
+            aria-invalid={Boolean(errors.secretCode)}
+            onChange={(e) => onChange({ secretCode: e.target.value })}
+          />
+          <p className="field-help">Voters must enter this code to access the ballot.</p>
+          <FieldError id="secret-code-error" message={errors.secretCode} />
+        </div>
+
+        <div>
+          <label htmlFor="max-voters" className="field-label">
+            Maximum Voter Capacity (Cap)
+          </label>
+          <input
+            id="max-voters"
+            type="number"
+            min="1"
+            className={`field-input ${errors.maxVoters ? 'field-input-error' : ''}`}
+            value={value.maxVoters}
+            placeholder="e.g. 500 (Leave blank for unlimited)"
+            aria-invalid={Boolean(errors.maxVoters)}
+            onChange={(e) => onChange({ maxVoters: e.target.value })}
+          />
+          <p className="field-help">Maximum number of voters allowed to cast votes.</p>
+          <FieldError id="max-voters-error" message={errors.maxVoters} />
+        </div>
+      </div>
+
       <div>
         <label htmlFor="election-organization" className="field-label">
           Election Location / Organization

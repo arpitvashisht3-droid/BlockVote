@@ -22,7 +22,7 @@ type CandidateFormProps = {
   open: boolean
   candidate: DraftCandidate | null
   onClose: () => void
-  onSave: (candidate: Omit<DraftCandidate, 'id'> & { id?: string }) => void
+  onSave: (candidate: Omit<DraftCandidate, 'id'> & { id?: string }, keepOpen?: boolean) => void
   strict?: boolean
 }
 
@@ -73,7 +73,7 @@ type CandidateFormFieldsProps = {
   title: string
   candidate: DraftCandidate | null
   onClose: () => void
-  onSave: (candidate: Omit<DraftCandidate, 'id'> & { id?: string }) => void
+  onSave: (candidate: Omit<DraftCandidate, 'id'> & { id?: string }, keepOpen?: boolean) => void
   strict: boolean
 }
 
@@ -101,7 +101,7 @@ function CandidateFormFields({
     }
   }
 
-  function handleSubmit() {
+  function handleSubmit(keepOpen = false) {
     setAttempted(true)
     const nextErrors = validateCandidate(values, options)
     setErrors(nextErrors)
@@ -110,20 +110,29 @@ function CandidateFormFields({
       return
     }
 
-    onSave({
-      id: candidate?.id,
-      name: values.name.trim(),
-      department: values.department.trim(),
-      position: values.position.trim(),
-      about: values.about.trim(),
-    })
+    onSave(
+      {
+        id: candidate?.id,
+        name: values.name.trim(),
+        department: values.department.trim(),
+        position: values.position.trim(),
+        about: values.about.trim(),
+      },
+      keepOpen,
+    )
+
+    if (keepOpen) {
+      setValues(emptyCandidate)
+      setErrors({})
+      setAttempted(false)
+    }
   }
 
   return (
     <form
       onSubmit={(event) => {
         event.preventDefault()
-        handleSubmit()
+        handleSubmit(false)
       }}
     >
       <div className="flex items-start justify-between gap-3">
@@ -221,14 +230,27 @@ function CandidateFormFields({
 
       <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
         <Button
+          type="button"
           variant="secondary"
           className="w-full sm:w-auto"
           onClick={onClose}
         >
           Cancel
         </Button>
-        <Button type="submit" className="w-full sm:w-auto">
-          Save Candidate
+
+        {!candidate && (
+          <Button
+            type="button"
+            variant="secondary"
+            className="w-full sm:w-auto text-accent border-accent hover:bg-accent-soft"
+            onClick={() => handleSubmit(true)}
+          >
+            Save & Add Another
+          </Button>
+        )}
+
+        <Button type="button" className="w-full sm:w-auto" onClick={() => handleSubmit(false)}>
+          {candidate ? 'Update Candidate' : 'Save Candidate'}
         </Button>
       </div>
     </form>

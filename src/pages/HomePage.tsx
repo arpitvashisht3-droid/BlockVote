@@ -5,14 +5,16 @@ import {
   MousePointerClick,
   ShieldCheck,
 } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { buttonClassName } from '../components/buttonStyles'
 import { HeroVisual } from '../components/HeroVisual'
-import { formatNumber, getSessionElections, type Election } from '../data/elections'
+import { fetchBackendElections, formatNumber, getSessionElections, type Election } from '../data/elections'
 import {
   chainElectionToElection,
   fetchElectionsFromChain,
 } from '../services/blockchain'
+import { useDemoAuth } from '../context/DemoAuthContext'
+import { AuthPromptModal } from '../components/AuthPromptModal'
 
 const features = [
   {
@@ -42,24 +44,41 @@ const features = [
 ]
 
 export function HomePage() {
+  const navigate = useNavigate()
+  const { isAuthenticated, user } = useDemoAuth()
   const [elections, setElections] = useState<Election[]>([])
+  const [showAuthModal, setShowAuthModal] = useState(false)
+
+  const handleExploreClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    if (isAuthenticated && user) {
+      if (user.role === 'admin') {
+        navigate('/admin/elections')
+      } else {
+        navigate('/dashboard/elections')
+      }
+    } else {
+      setShowAuthModal(true)
+    }
+  }
 
   useEffect(() => {
     let mounted = true
     async function load() {
       try {
+        const backendData = await fetchBackendElections()
         const chainData = await fetchElectionsFromChain()
         const mapped = chainData.map(chainElectionToElection)
-        const session = getSessionElections()
-        const combined = [...session]
+        const combined = [...backendData]
         for (const c of mapped) {
-          if (!combined.some((e) => e.onchainId === c.onchainId)) {
+          if (!combined.some((e) => e.onchainId === c.onchainId || e.id === c.id)) {
             combined.push(c)
           }
         }
         if (mounted) setElections(combined)
       } catch (err) {
         console.error('Failed to load chain elections for homepage:', err)
+        if (mounted) setElections(getSessionElections())
       }
     }
     load()
@@ -81,6 +100,12 @@ export function HomePage() {
 
   return (
     <div className="overflow-x-hidden">
+      <AuthPromptModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        redirectPath={user?.role === 'admin' ? '/admin/elections' : '/dashboard/elections'}
+      />
+
       <section className="mx-auto grid max-w-6xl items-center gap-10 px-4 pt-12 pb-8 sm:px-6 sm:pt-16 lg:grid-cols-2 lg:gap-16 lg:pt-20 lg:pb-10">
         <div className="min-w-0">
           <h1 className="text-5xl font-extrabold tracking-tight text-navy sm:text-6xl lg:text-7xl lg:leading-[1.05]">
@@ -95,12 +120,13 @@ export function HomePage() {
             outcome on-chain.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Link
-              to="/elections"
+            <button
+              type="button"
+              onClick={handleExploreClick}
               className={buttonClassName({ size: 'lg' })}
             >
               Explore Elections
-            </Link>
+            </button>
             <a
               href="#features"
               className={buttonClassName({ variant: 'secondary', size: 'lg' })}

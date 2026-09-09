@@ -12,6 +12,7 @@ export interface UserProfile {
   dateOfBirth?: string
   country?: string
   state?: string
+  countryState?: string
   city?: string
   walletAddress?: string
   isVerified?: boolean

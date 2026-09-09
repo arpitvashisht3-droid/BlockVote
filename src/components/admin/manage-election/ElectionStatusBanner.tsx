@@ -1,5 +1,5 @@
 import { Clock3 } from 'lucide-react'
-import type { Election } from '../../../data/elections'
+import { formatElectionDateTime, type Election } from '../../../data/elections'
 
 type ElectionStatusBannerProps = {
   election: Election
@@ -56,15 +56,15 @@ export function ElectionStatusBanner({
       <dl className="mt-5 grid gap-4 sm:grid-cols-2">
         <div>
           <dt className="text-xs font-semibold tracking-wide text-navy-muted uppercase">
-            Start
+            Start Date & Time
           </dt>
-          <dd className="mt-1 text-sm font-semibold text-navy">{election.startDate}</dd>
+          <dd className="mt-1 text-sm font-semibold text-navy">{formatElectionDateTime(election.startDate)}</dd>
         </div>
         <div>
           <dt className="text-xs font-semibold tracking-wide text-navy-muted uppercase">
-            End
+            End Date & Time
           </dt>
-          <dd className="mt-1 text-sm font-semibold text-navy">{election.endDate}</dd>
+          <dd className="mt-1 text-sm font-semibold text-navy">{formatElectionDateTime(election.endDate)}</dd>
         </div>
       </dl>
     </section>

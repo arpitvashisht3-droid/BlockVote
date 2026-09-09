@@ -8,6 +8,7 @@ import { ElectionInfo } from '../components/elections/ElectionInfo'
 import { StatusBadge } from '../components/elections/StatusBadge'
 import { VoteConfirmationModal } from '../components/elections/VoteConfirmationModal'
 import {
+  fetchBackendElections,
   getCandidateById,
   getElectionById,
   type Election,
@@ -38,27 +39,32 @@ export function ElectionDetailsPage() {
 
   useEffect(() => {
     let mounted = true
-    if (!election) {
-      fetchElectionsFromChain()
-        .then((chainData) => {
-          if (!mounted) return
-          const found = chainData
+    async function loadElection() {
+      if (!id) return
+      try {
+        const backendElections = await fetchBackendElections()
+        let found = backendElections.find((e) => e.id === id || e.electionCode === id)
+        if (!found) {
+          const chainData = await fetchElectionsFromChain()
+          found = chainData
             .map(chainElectionToElection)
             .find((e) => e.id === id || String(e.onchainId) === id || e.electionCode === id)
-          if (found) {
-            setElection(found)
-          }
-        })
-        .catch(console.error)
-        .finally(() => {
-          if (mounted) setLoading(false)
-        })
+        }
+        if (mounted && found) {
+          setElection(found)
+        }
+      } catch (err) {
+        console.error('Error loading election:', err)
+      } finally {
+        if (mounted) setLoading(false)
+      }
     }
+    loadElection()
     return () => {
       mounted = false
       window.clearTimeout(confirmTimer.current)
     }
-  }, [id, election])
+  }, [id])
 
   if (loading) {
     return (
@@ -76,7 +82,7 @@ export function ElectionDetailsPage() {
           This election is not in the current BlockVote catalog.
         </p>
         <Link
-          to="/elections"
+          to="/dashboard/elections"
           className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-accent hover:text-accent-hover"
         >
           <ArrowLeft className="size-4" aria-hidden="true" />
@@ -131,7 +137,7 @@ export function ElectionDetailsPage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
       <Link
-        to="/elections"
+        to="/dashboard/elections"
         className="inline-flex items-center gap-2 text-sm font-medium text-navy-muted transition-colors hover:text-navy"
       >
         <ArrowLeft className="size-4" aria-hidden="true" />

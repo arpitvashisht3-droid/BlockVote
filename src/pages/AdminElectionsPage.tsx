@@ -7,7 +7,7 @@ import { AdminElectionTable } from '../components/admin/elections/AdminElectionT
 import { ElectionControlModal } from '../components/admin/manage-election/ElectionControlModal'
 import { Button } from '../components/Button'
 import { buttonClassName } from '../components/buttonStyles'
-import type { ElectionType } from '../data/elections'
+import { fetchBackendElections, type ElectionType } from '../data/elections'
 import {
   archiveElectionById,
   duplicateElection,
@@ -19,17 +19,26 @@ import {
   type ElectionManagement,
 } from '../data/manageElection'
 
+import { useDemoAuth } from '../context/DemoAuthContext'
+
 export function AdminElectionsPage() {
+  const { user } = useDemoAuth()
   const [query, setQuery] = useState('')
   const [status, setStatus] = useState<AdminListStatus>('all')
   const [electionType, setElectionType] = useState<'all' | ElectionType>('all')
   const [sort, setSort] = useState<AdminListSort>('newest')
-  const [items, setItems] = useState(() => listAdminElections())
+  const [items, setItems] = useState(() => listAdminElections(user?.id))
   const [archiveTarget, setArchiveTarget] = useState<ElectionManagement | null>(
     null,
   )
   const [toast, setToast] = useState<string | null>(null)
   const toastTimer = useRef<number | undefined>(undefined)
+
+  useEffect(() => {
+    fetchBackendElections(true)
+      .then(() => setItems(listAdminElections(user?.id)))
+      .catch(console.error)
+  }, [user?.id])
 
   useEffect(() => {
     return () => window.clearTimeout(toastTimer.current)
@@ -47,7 +56,7 @@ export function AdminElectionsPage() {
     sort !== 'newest'
 
   function refresh() {
-    setItems(listAdminElections())
+    setItems(listAdminElections(user?.id))
   }
 
   function showToast(message: string) {

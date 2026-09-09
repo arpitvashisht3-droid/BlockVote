@@ -28,11 +28,29 @@ import { SettingsPage } from './pages/SettingsPage'
 import { HelpPage } from './pages/HelpPage'
 
 function ElectionsRouteResolver() {
-  const { isAuthenticated, user } = useDemoAuth()
-  if (isAuthenticated && user) {
-    return <Navigate to="/dashboard/elections" replace />
+  const { isAuthenticated, user, loading } = useDemoAuth()
+
+  // Wait until auth state is known so we don't flash the wrong page
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="size-8 animate-spin rounded-full border-4 border-accent border-t-transparent" />
+      </div>
+    )
   }
-  return <ElectionsPage />
+
+  // Unauthenticated users must sign in first before browsing elections
+  if (!isAuthenticated || !user) {
+    return <Navigate to="/signin?redirect=/dashboard/elections" replace />
+  }
+
+  // Authenticated conductors go to their elections dashboard
+  if (user.role === 'admin') {
+    return <Navigate to="/admin/elections" replace />
+  }
+
+  // Authenticated voters see the voter elections page
+  return <Navigate to="/dashboard/elections" replace />
 }
 
 export default function App() {
@@ -53,9 +71,13 @@ export default function App() {
               element={<CreateElectionPage />}
             />
             <Route path="/admin/elections/:id" element={<ManageElectionPage />} />
+            <Route path="/admin/elections/:id/results" element={<AdminResultsPage />} />
             <Route path="/admin/candidates" element={<CandidateManagementPage />} />
             <Route path="/admin/results" element={<AdminResultsPage />} />
-            <Route path="/admin/transactions" element={<AdminPlaceholderPage />} />
+            <Route path="/admin/transactions" element={<TransactionsPage />} />
+            <Route path="/admin/profile" element={<ProfilePage />} />
+            <Route path="/admin/settings" element={<SettingsPage />} />
+            <Route path="/admin/help" element={<HelpPage />} />
           </Route>
         </Route>
 
@@ -64,6 +86,8 @@ export default function App() {
           <Route element={<DashboardLayout variant="voter" />}>
             <Route path="/dashboard" element={<VoterDashboardPage />} />
             <Route path="/dashboard/elections" element={<ElectionsPage />} />
+            <Route path="/dashboard/elections/:id" element={<ElectionDetailsPage />} />
+            <Route path="/dashboard/elections/:id/results" element={<ElectionResultsPage />} />
             <Route path="/dashboard/votes" element={<MyVotesPage />} />
             <Route path="/dashboard/transactions" element={<TransactionsPage />} />
             <Route path="/dashboard/profile" element={<ProfilePage />} />
@@ -76,8 +100,11 @@ export default function App() {
         <Route element={<PublicLayout />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/elections" element={<ElectionsRouteResolver />} />
-          <Route path="/elections/:id/results" element={<ElectionResultsPage />} />
-          <Route path="/elections/:id" element={<ElectionDetailsPage />} />
+          {/* Public fallbacks */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/elections/:id/results" element={<ElectionResultsPage />} />
+            <Route path="/elections/:id" element={<ElectionDetailsPage />} />
+          </Route>
           <Route path="/vote-success" element={<VoteSuccessPage />} />
           <Route
             path="/verify/:electionId"

@@ -9,8 +9,8 @@ import {
   UserRound,
   Vote,
 } from 'lucide-react'
-import { Link, NavLink } from 'react-router-dom'
-import { adminProfile } from '../../data/admin'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { useDemoAuth } from '../../context/DemoAuthContext'
 import { CandidateAvatar } from '../elections/CandidateAvatar'
 import { Logo } from '../Logo'
 
@@ -35,6 +35,18 @@ type AdminSidebarProps = {
 }
 
 export function AdminSidebar({ onNavigate }: AdminSidebarProps) {
+  const { user, logout } = useDemoAuth()
+  const navigate = useNavigate()
+
+  const displayName = user?.name || 'Election Conductor'
+  const displayRole = user?.role === 'admin' ? 'Election Conductor' : 'Administrator'
+
+  const handleLogout = () => {
+    logout()
+    if (onNavigate) onNavigate()
+    navigate('/')
+  }
+
   return (
     <div className="flex h-full flex-col bg-navy text-white">
       <div className="border-b border-white/10 px-5 py-5">
@@ -57,40 +69,46 @@ export function AdminSidebar({ onNavigate }: AdminSidebarProps) {
       </nav>
 
       <div className="space-y-1 border-t border-white/10 p-4">
-        <button
-          type="button"
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 hover:bg-white/5 hover:text-white"
+        <NavLink
+          to="/admin/settings"
+          className={linkClass}
+          onClick={onNavigate}
         >
           <Settings className="size-4" aria-hidden="true" />
           Settings
-        </button>
-        <a
-          href="mailto:hello@blockvote.app"
-          className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 hover:bg-white/5 hover:text-white"
+        </NavLink>
+        <NavLink
+          to="/admin/help"
+          className={linkClass}
+          onClick={onNavigate}
         >
           <CircleHelp className="size-4" aria-hidden="true" />
           Help & Support
-        </a>
-        <Link
-          to="/"
-          className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 hover:bg-white/5 hover:text-white"
-          onClick={onNavigate}
+        </NavLink>
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 hover:bg-white/5 hover:text-white transition-colors"
         >
           <LogOut className="size-4" aria-hidden="true" />
           Logout
-        </Link>
+        </button>
       </div>
 
       <div className="border-t border-white/10 p-4">
-        <div className="flex items-center gap-3 rounded-xl bg-white/5 px-3 py-3">
-          <CandidateAvatar name={adminProfile.name} size="sm" />
+        <Link
+          to="/admin/profile"
+          onClick={onNavigate}
+          className="flex items-center gap-3 rounded-xl bg-white/5 px-3 py-3 hover:bg-white/10 transition-colors"
+        >
+          <CandidateAvatar name={displayName} size="sm" />
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold text-white">
-              {adminProfile.name}
+              {displayName}
             </p>
-            <p className="text-xs text-slate-400">{adminProfile.role}</p>
+            <p className="text-xs text-slate-400">{displayRole}</p>
           </div>
-        </div>
+        </Link>
       </div>
     </div>
   )

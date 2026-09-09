@@ -6,6 +6,7 @@ import { FilterMenu } from '../components/elections/FilterMenu'
 import { SearchBar } from '../components/elections/SearchBar'
 import { Button } from '../components/Button'
 import {
+  fetchBackendElections,
   filterElections,
   getAllElections,
   type Election,
@@ -27,18 +28,19 @@ export function ElectionsPage() {
     let mounted = true
     async function load() {
       try {
+        const backendData = await fetchBackendElections()
         const chainData = await fetchElectionsFromChain()
         const mapped = chainData.map(chainElectionToElection)
-        const session = getAllElections()
-        const combined = [...session]
+        const combined = [...backendData]
         for (const c of mapped) {
-          if (!combined.some((e) => e.onchainId === c.onchainId)) {
+          if (!combined.some((e) => e.onchainId === c.onchainId || e.id === c.id)) {
             combined.push(c)
           }
         }
         if (mounted) setElections(combined)
       } catch (err) {
-        console.error('Failed to load elections from blockchain:', err)
+        console.error('Failed to load elections:', err)
+        if (mounted) setElections(getAllElections())
       } finally {
         if (mounted) setLoading(false)
       }

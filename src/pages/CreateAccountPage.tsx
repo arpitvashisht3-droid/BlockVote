@@ -26,6 +26,7 @@ export function CreateAccountPage() {
   const [city, setCity] = useState('')
 
   const [showPassword, setShowPassword] = useState(false)
+  const [rememberMe, setRememberMe] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -74,10 +75,22 @@ export function CreateAccountPage() {
         role: selectedRole
       })
 
-      if (user.role === 'admin') {
-        navigate('/admin')
+      // Save credentials if Remember Me is checked
+      if (rememberMe) {
+        localStorage.setItem('blockvote_remembered_email', email.trim())
+        localStorage.setItem('blockvote_remembered_role', selectedRole)
       } else {
-        navigate('/dashboard')
+        localStorage.removeItem('blockvote_remembered_email')
+        localStorage.removeItem('blockvote_remembered_role')
+      }
+
+      const redirectParam = new URLSearchParams(window.location.search).get('redirect')
+      if (redirectParam) {
+        navigate(redirectParam)
+      } else if (user.role === 'admin') {
+        navigate('/admin/elections')
+      } else {
+        navigate('/dashboard/elections')
       }
     } catch (err: any) {
       setError(err.message || 'Failed to create account. Please check if username or email is already taken.')
@@ -87,7 +100,7 @@ export function CreateAccountPage() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col justify-center bg-gradient-to-b from-navy to-navy-dark px-4 py-12 text-white sm:px-6 lg:px-8">
+    <div className="flex min-h-dvh flex-col justify-center bg-gradient-to-br from-[#060D1A] via-[#0A1428] to-[#0D1B36] px-4 py-12 text-white sm:px-6 lg:px-8">
       {/* Decorative Background */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 size-96 rounded-full bg-teal-500/15 blur-3xl" />
@@ -116,7 +129,7 @@ export function CreateAccountPage() {
         </div>
 
         {/* Form Card */}
-        <div className="mt-6 rounded-2xl border border-white/10 bg-navy-light/90 p-6 shadow-2xl backdrop-blur-xl sm:p-8">
+        <div className="mt-6 rounded-2xl border border-slate-700/80 bg-[#0B1528] p-6 shadow-2xl sm:p-8">
           {/* Role Selection Tabs */}
           <div className="mb-6">
             <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">
@@ -384,10 +397,27 @@ export function CreateAccountPage() {
               </div>
             </div>
 
+            {/* Remember Me */}
+            <div className="flex items-center gap-2.5 pt-1">
+              <input
+                id="signup-remember-me"
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="size-4 rounded border-slate-600 bg-slate-900 accent-accent cursor-pointer"
+              />
+              <label
+                htmlFor="signup-remember-me"
+                className="text-sm font-medium text-slate-200 cursor-pointer select-none hover:text-white transition-colors"
+              >
+                Remember me on this device
+              </label>
+            </div>
+
             <Button
               type="submit"
               disabled={loading}
-              className="mt-6 flex w-full items-center justify-center gap-2 py-3.5 text-sm font-semibold"
+              className="mt-4 flex w-full items-center justify-center gap-2 py-3.5 text-sm font-bold shadow-lg shadow-accent/20"
             >
               {loading
                 ? 'Creating Account...'
@@ -398,11 +428,11 @@ export function CreateAccountPage() {
             </Button>
           </form>
 
-          <div className="mt-6 text-center text-xs text-slate-300">
+          <div className="mt-6 border-t border-slate-700 pt-5 text-center text-sm font-semibold text-slate-100">
             Already have an account?{' '}
             <Link
               to="/signin"
-              className="font-semibold text-accent transition-colors hover:text-accent-hover underline"
+              className="font-bold text-accent transition-colors hover:text-emerald-300 underline underline-offset-2 ml-1"
             >
               Sign In
             </Link>

@@ -1,9 +1,11 @@
-import { Menu, Wallet, X } from 'lucide-react'
+import { Menu, Wallet, X, LayoutDashboard } from 'lucide-react'
 import { useState } from 'react'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import { Button } from './Button'
 import { Logo } from './Logo'
 import { connectWallet } from '../services/wallet'
+import { useDemoAuth } from '../context/DemoAuthContext'
+import { AuthPromptModal } from './AuthPromptModal'
 
 type NavItem =
   | { kind: 'route'; to: string; label: string; end?: boolean }
@@ -28,10 +30,26 @@ const hashLinkClass =
   'rounded-md px-3 py-2 text-sm font-medium text-navy-muted transition-colors hover:text-navy md:flex md:h-16 md:items-center md:rounded-none md:py-0'
 
 export function Navbar() {
+  const navigate = useNavigate()
+  const { isAuthenticated, user } = useDemoAuth()
   const [open, setOpen] = useState(false)
+  const [showAuthModal, setShowAuthModal] = useState(false)
   const [walletAddress, setWalletAddress] = useState<string | null>(null)
   const [isConnecting, setIsConnecting] = useState(false)
   const [walletError, setWalletError] = useState<string | null>(null)
+
+  const handleElectionsClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    if (isAuthenticated && user) {
+      if (user.role === 'admin') {
+        navigate('/admin/elections')
+      } else {
+        navigate('/dashboard/elections')
+      }
+    } else {
+      setShowAuthModal(true)
+    }
+  }
 
   async function handleConnectWallet() {
     setWalletError(null)
@@ -56,22 +74,41 @@ export function Navbar() {
       ? `${walletAddress.substring(0, 6)}...${walletAddress.substring(walletAddress.length - 4)}`
       : 'Connect Wallet'
 
+  const dashboardPath = user?.role === 'admin' ? '/admin' : '/dashboard'
+
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-white/90 backdrop-blur-md">
+      <AuthPromptModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        redirectPath={user?.role === 'admin' ? '/admin/elections' : '/dashboard/elections'}
+      />
+
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
         <Logo />
 
         <nav className="hidden items-center md:flex" aria-label="Primary">
           {navItems.map((item) =>
             item.kind === 'route' ? (
-              <NavLink
-                key={item.label}
-                to={item.to}
-                end={item.end}
-                className={navLinkClass}
-              >
-                {item.label}
-              </NavLink>
+              item.label === 'Elections' ? (
+                <button
+                  key={item.label}
+                  type="button"
+                  onClick={handleElectionsClick}
+                  className="rounded-md px-3 py-2 text-sm font-medium text-navy-muted transition-colors hover:text-navy md:flex md:h-16 md:items-center md:rounded-none md:py-0"
+                >
+                  {item.label}
+                </button>
+              ) : (
+                <NavLink
+                  key={item.label}
+                  to={item.to}
+                  end={item.end}
+                  className={navLinkClass}
+                >
+                  {item.label}
+                </NavLink>
+              )
             ) : (
               <a key={item.label} href={item.href} className={hashLinkClass}>
                 {item.label}
@@ -81,12 +118,22 @@ export function Navbar() {
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
-          <NavLink
-            to="/signin"
-            className="rounded-lg border border-border px-3.5 py-2 text-sm font-medium text-navy transition-colors hover:bg-slate-50"
-          >
-            Sign In
-          </NavLink>
+          {isAuthenticated ? (
+            <NavLink
+              to={dashboardPath}
+              className="inline-flex items-center gap-2 rounded-lg border border-accent bg-accent/10 px-3.5 py-2 text-sm font-semibold text-accent transition-colors hover:bg-accent hover:text-white"
+            >
+              <LayoutDashboard className="size-4" />
+              Dashboard
+            </NavLink>
+          ) : (
+            <NavLink
+              to="/signin"
+              className="rounded-lg border border-border px-3.5 py-2 text-sm font-medium text-navy transition-colors hover:bg-slate-50"
+            >
+              Sign In
+            </NavLink>
+          )}
           <div className="flex flex-col items-end gap-1">
             <Button onClick={handleConnectWallet} disabled={isConnecting}>
               <Wallet className="size-4" aria-hidden="true" />
@@ -118,15 +165,29 @@ export function Navbar() {
           <nav className="flex flex-col gap-1" aria-label="Mobile">
             {navItems.map((item) =>
               item.kind === 'route' ? (
-                <NavLink
-                  key={item.label}
-                  to={item.to}
-                  end={item.end}
-                  className={navLinkClass}
-                  onClick={() => setOpen(false)}
-                >
-                  {item.label}
-                </NavLink>
+                item.label === 'Elections' ? (
+                  <button
+                    key={item.label}
+                    type="button"
+                    onClick={(e) => {
+                      setOpen(false)
+                      handleElectionsClick(e)
+                    }}
+                    className="flex w-full items-center rounded-md px-3 py-2 text-left text-sm font-medium text-navy-muted transition-colors hover:text-navy"
+                  >
+                    {item.label}
+                  </button>
+                ) : (
+                  <NavLink
+                    key={item.label}
+                    to={item.to}
+                    end={item.end}
+                    className={navLinkClass}
+                    onClick={() => setOpen(false)}
+                  >
+                    {item.label}
+                  </NavLink>
+                )
               ) : (
                 <a
                   key={item.label}

@@ -6,7 +6,7 @@ import {
   Hash,
   Users,
 } from 'lucide-react'
-import { formatNumber, type Election } from '../../data/elections'
+import { formatNumber, formatElectionDateTime, type Election } from '../../data/elections'
 
 type ElectionInfoProps = {
   election: Election
@@ -21,13 +21,13 @@ export function ElectionInfo({ election }: ElectionInfoProps) {
     },
     {
       icon: CalendarClock,
-      label: 'Start Date',
-      value: election.startDate,
+      label: 'Start Date & Time',
+      value: formatElectionDateTime(election.startDate),
     },
     {
       icon: Clock3,
-      label: 'End Date',
-      value: election.endDate,
+      label: 'End Date & Time',
+      value: formatElectionDateTime(election.endDate),
     },
     {
       icon: Users,
